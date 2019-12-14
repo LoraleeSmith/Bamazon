@@ -13,13 +13,52 @@ var connection = mysql.createConnection({
 });
 
 connection.connect(function (err) {
-    if (err) {
-        throw (err);
-    }
+    if (err) throw (err);
     console.log("connected as id", connection.threadId);
-
-    connection.query("select * from products", function (err, res) {
-        console.log(res)
+    makeTable()
+})
+var makeTable = function () {
+    connection.query("SELECT *FROM products", function (err, res) {
+        for (var i = 0; i < res.length; i++) {
+            console.log(res[i].Id + " || " + res[i].Product + " || " +
+                res[i].Department + " || " + res[i].Price + "||" + res[i].Stock + "\n");
+        }
+        promptCustomer(res);
     })
-    connection.end();
-});
+}
+var promptCustomer = function (res) {
+    inquirer.prompt([{
+        type: "input",
+        name: "choice",
+        message: "What would you like to buy?"
+    }]).then(function (answer) {
+        var correct = false;
+        for (var i = 0; i < res.length; i++) {
+            correct = true;
+            var product = answer.choice;
+            var id = i;
+            inquirer.prompt({
+                type: "input",
+                name: "quant",
+                message: "How many would you like to buy?",
+                validate: function (value) {
+                    if (isNaN(value) == false) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+            }).then(function (answer) {
+                if ((re[id].Stock - answer.quant) > 0) {
+                    connection.query("UPDATE products SET Stock= '" + (res[id].Stock - answer.quant) + "'WHERE Product=' " + Product + "'" function (err, res2) {
+                        console.log("Thank you for your purchase!");
+                        makeTable();
+                    })
+                } else {
+                    console.log("Insufficent Quanitity!!");
+                    promptCustomer(res);
+                }
+            }
+    }
+    })
+}
